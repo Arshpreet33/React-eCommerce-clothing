@@ -4,6 +4,7 @@ import {
 	signInWithPopup,
 	GoogleAuthProvider,
 	createUserWithEmailAndPassword,
+	signInWithEmailAndPassword,
 } from 'firebase/auth';
 import {
 	getFirestore,
@@ -42,7 +43,7 @@ export const createUserDocFromAuth = async (userAuth, additionalData = {}) => {
 	console.log(userDocRef);
 	const userSnapshot = await getDoc(userDocRef);
 
-	//if user logs in via Google Auth for the first time, then create an id for the user.
+	//if user logs in via Google Auth for the first time/ or Signs Up - then create an id for the user.
 	if (!userSnapshot.exists()) {
 		const { email, displayName } = userAuth;
 		const createdDate = new Date();
@@ -68,4 +69,10 @@ export const createAuthUserWithEmailAndPassword = async (email, password) => {
 	if (!email || !password) return;
 
 	return await createUserWithEmailAndPassword(auth, email, password);
+};
+
+export const signInUserWithEmailAndPassword = async (email, password) => {
+	if (!email || !password) return;
+
+	return await signInWithEmailAndPassword(auth, email, password);
 };
