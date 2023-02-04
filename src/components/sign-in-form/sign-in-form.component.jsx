@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import { fieldNames, fieldLabels } from '../../util/constants/constants';
 import {
 	createUserDocFromAuth,
@@ -8,6 +8,7 @@ import {
 import FormInput from '../form-input/form-input.component';
 import Button from '../button/button.component';
 import './sign-in-form.styles.scss';
+import { UserContext } from '../../context/user.context';
 
 const defaultFormFields = {
 	email: '',
@@ -17,6 +18,12 @@ const defaultFormFields = {
 const SignInForm = () => {
 	const [formFields, setFormFields] = useState(defaultFormFields);
 	const { email, password } = formFields;
+	const { setCurrentUser } = useContext(UserContext);
+
+	const logInUser = (user) => {
+		setCurrentUser(user);
+		console.log('user logged in');
+	};
 
 	const resetFormFields = () => {
 		setFormFields(defaultFormFields);
@@ -34,6 +41,7 @@ const SignInForm = () => {
 			const { user } = await signInUserWithEmailAndPassword(email, password);
 			// const userDocRef = await createUserDocFromAuth(user);
 			console.log(user);
+			if (user) logInUser(user);
 			resetFormFields();
 		} catch (error) {
 			switch (error.code) {
@@ -44,6 +52,7 @@ const SignInForm = () => {
 					alert('Email not found. Please sign up instead');
 					break;
 				default:
+					debugger;
 					alert('Login failed: ', error);
 					break;
 			}
@@ -53,6 +62,7 @@ const SignInForm = () => {
 	const logGoogleUser = async () => {
 		const { user } = await signInWithGooglePopup();
 		const userDocRef = await createUserDocFromAuth(user);
+		if (userDocRef) logInUser(user);
 	};
 
 	return (
