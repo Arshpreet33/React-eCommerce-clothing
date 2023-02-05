@@ -18,7 +18,19 @@ const addCartItem = (cartItems, productToAdd) => {
 	];
 };
 
-const removeCartItem = (cartItems, itemToRemove) => {};
+const removeCartItem = (cartItems, itemToRemove, removeItemCompletely) => {
+	const itemFound = cartItems.find((item) => item.id === itemToRemove.id);
+	if (itemFound.quantity === 1 || removeItemCompletely) {
+		return cartItems.filter((item) => {
+			if (item.id !== itemToRemove.id) return item;
+		});
+	}
+	return cartItems.map((item) =>
+		item.id === itemToRemove.id
+			? { ...item, quantity: item.quantity - 1 }
+			: item
+	);
+};
 
 //Actual value we want to access. - default value
 export const CartItemsContext = createContext({
@@ -27,13 +39,16 @@ export const CartItemsContext = createContext({
 	cartDropdownToggle: false,
 	setCartDropdownToggle: () => {},
 	addItemToCart: () => {},
+	removeItemFromCart: () => {},
 	totalCartItems: 0,
+	totalCheckoutPrice: 0,
 });
 
 export const CartItemsProvider = ({ children }) => {
 	const [cartItems, setCartItems] = useState([]);
 	const [cartDropdownToggle, setCartDropdownToggle] = useState(false);
 	const [totalCartItems, setTotalCartItems] = useState(false);
+	const [totalCheckoutPrice, setTotalCheckoutPrice] = useState(false);
 
 	useEffect(() => {
 		const newCartCount = cartItems.reduce(
@@ -43,14 +58,22 @@ export const CartItemsProvider = ({ children }) => {
 		setTotalCartItems(newCartCount);
 	}, [cartItems]);
 
+	useEffect(() => {
+		const newCheckoutTotal = cartItems.reduce(
+			(total, item) => total + item.quantity * item.price,
+			0
+		);
+		setTotalCheckoutPrice(newCheckoutTotal);
+	}, [cartItems]);
+
 	const addItemToCart = (productToAdd) => {
 		setCartItems(addCartItem(cartItems, productToAdd));
 	};
 
-	const removeItemFromCart = (productToRemove) => {
+	const removeItemFromCart = (itemToRemove, removeItemCompletely) => {
 		if (cartItems.length === 0) return;
 
-		setCartItems(removeCartItem(cartItems, productToRemove));
+		setCartItems(removeCartItem(cartItems, itemToRemove, removeItemCompletely));
 	};
 
 	const value = {
@@ -61,6 +84,7 @@ export const CartItemsProvider = ({ children }) => {
 		addItemToCart,
 		removeItemFromCart,
 		totalCartItems,
+		totalCheckoutPrice,
 	};
 
 	return (
