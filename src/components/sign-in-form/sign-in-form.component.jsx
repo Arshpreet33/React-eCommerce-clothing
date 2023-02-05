@@ -18,12 +18,6 @@ const defaultFormFields = {
 const SignInForm = () => {
 	const [formFields, setFormFields] = useState(defaultFormFields);
 	const { email, password } = formFields;
-	const { setCurrentUser } = useContext(UserContext);
-
-	const logInUser = (user) => {
-		setCurrentUser(user);
-		console.log('user logged in');
-	};
 
 	const resetFormFields = () => {
 		setFormFields(defaultFormFields);
@@ -40,8 +34,6 @@ const SignInForm = () => {
 		try {
 			const { user } = await signInUserWithEmailAndPassword(email, password);
 			// const userDocRef = await createUserDocFromAuth(user);
-			console.log(user);
-			if (user) logInUser(user);
 			resetFormFields();
 		} catch (error) {
 			switch (error.code) {
@@ -61,8 +53,6 @@ const SignInForm = () => {
 
 	const logGoogleUser = async () => {
 		const { user } = await signInWithGooglePopup();
-		const userDocRef = await createUserDocFromAuth(user);
-		if (userDocRef) logInUser(user);
 	};
 
 	return (

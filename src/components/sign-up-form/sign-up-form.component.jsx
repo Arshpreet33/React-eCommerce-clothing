@@ -19,12 +19,6 @@ const defaultFormFields = {
 const SignUpForm = () => {
 	const [formFields, setFormFields] = useState(defaultFormFields);
 	const { displayName, email, password, confirmPassword } = formFields;
-	const { setCurrentUser } = useContext(UserContext);
-
-	const logInUser = (user) => {
-		setCurrentUser(user);
-		console.log('user logged in');
-	};
 
 	const resetFormFields = () => {
 		setFormFields(defaultFormFields);
@@ -46,9 +40,6 @@ const SignUpForm = () => {
 				email,
 				password
 			);
-			const userDocRef = await createUserDocFromAuth(user, { displayName });
-			console.log(userDocRef);
-			if (userDocRef) logInUser(user);
 			resetFormFields();
 		} catch (error) {
 			if (error.code === 'auth/email-already-in-use') {
