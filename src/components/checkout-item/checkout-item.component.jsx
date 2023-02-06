@@ -1,5 +1,4 @@
 import { useContext } from 'react';
-import { Value } from 'sass';
 import { CartItemsContext } from '../../context/cart-items.context';
 import {
 	Arrow,
@@ -8,6 +7,7 @@ import {
 	ImageContainer,
 	Quantity,
 	RemoveButton,
+	Value,
 } from './checkout-item.styles';
 
 const CheckoutItem = ({ cartItem }) => {
