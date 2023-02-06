@@ -56,7 +56,6 @@ export const addCollectionAndDocuments = async (
 	});
 
 	await batch.commit();
-	console.log('done');
 };
 
 export const getCategoriesAndDocuments = async () => {
@@ -77,7 +76,6 @@ export const createUserDocFromAuth = async (userAuth, additionalData = {}) => {
 	if (!userAuth) return;
 
 	const userDocRef = doc(db, 'users', userAuth.uid);
-	console.log(userDocRef);
 	const userSnapshot = await getDoc(userDocRef);
 
 	//if user logs in via Google Auth for the first time/ or Signs Up - then create an id for the user.
