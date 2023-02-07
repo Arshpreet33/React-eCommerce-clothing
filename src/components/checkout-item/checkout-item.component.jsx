@@ -1,5 +1,3 @@
-import { useContext } from 'react';
-import { CartItemsContext } from '../../context/cart-items.context';
 import {
 	Arrow,
 	BaseSpan,
@@ -9,21 +7,29 @@ import {
 	RemoveButton,
 	Value,
 } from './checkout-item.styles';
+import { useDispatch, useSelector } from 'react-redux';
+import {
+	addItemToCart,
+	removeItemFromCart,
+} from '../../store/cart/cart.action';
+import { selectCartItems } from '../../store/cart/cart.selector';
 
 const CheckoutItem = ({ cartItem }) => {
 	const { name, price, imageUrl, quantity } = cartItem;
-	const { addItemToCart, removeItemFromCart } = useContext(CartItemsContext);
+
+	const dispatch = useDispatch();
+	const cartItems = useSelector(selectCartItems);
 
 	const changeCartBtnHandler = (direction) => {
 		switch (direction) {
 			case 0:
-				removeItemFromCart(cartItem, true);
+				dispatch(removeItemFromCart(cartItems, cartItem, true));
 				break;
 			case 1:
-				addItemToCart(cartItem);
+				dispatch(addItemToCart(cartItems, cartItem));
 				break;
 			case -1:
-				removeItemFromCart(cartItem);
+				dispatch(removeItemFromCart(cartItems, cartItem));
 				break;
 			default:
 				break;

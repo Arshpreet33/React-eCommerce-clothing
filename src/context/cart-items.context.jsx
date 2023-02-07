@@ -1,4 +1,5 @@
-import { createContext, useEffect, useState } from 'react';
+import { createContext, useReducer } from 'react';
+import { createAction } from '../util/reducer/reducer.util';
 
 const addCartItem = (cartItems, productToAdd) => {
 	const itemFound = cartItems.find((item) => item.id === productToAdd.id);
@@ -32,10 +33,20 @@ const removeCartItem = (cartItems, itemToRemove, removeItemCompletely) => {
 	);
 };
 
+const calculateCartCount = (cartItems) => {
+	return cartItems.reduce((total, item) => total + item.quantity, 0);
+};
+
+const calculateCartTotalPrice = (cartItems) => {
+	return cartItems.reduce(
+		(total, item) => total + item.quantity * item.price,
+		0
+	);
+};
+
 //Actual value we want to access. - default value
 export const CartItemsContext = createContext({
 	cartItems: [],
-	setCartItems: () => () => {},
 	cartDropdownToggle: false,
 	setCartDropdownToggle: () => {},
 	addItemToCart: () => {},
@@ -44,41 +55,71 @@ export const CartItemsContext = createContext({
 	totalCheckoutPrice: 0,
 });
 
+const INITIAL_STATE = {
+	cartItems: [],
+	cartDropdownToggle: false,
+	totalCartItems: 0,
+	totalCheckoutPrice: 0,
+};
+
+const CART_REDUCER_TYPES = {
+	TOGGLE_CART_DROPDOWN: 'TOGGLE_CART_DROPDOWN',
+	SET_CART_ITEMS: 'SET_CART_ITEMS',
+};
+
+const cartReducer = (state, action) => {
+	const { type, payload } = action;
+
+	switch (type) {
+		case CART_REDUCER_TYPES.SET_CART_ITEMS:
+			return {
+				...state,
+				...payload,
+			};
+		case CART_REDUCER_TYPES.TOGGLE_CART_DROPDOWN:
+			return { ...state, cartDropdownToggle: payload };
+		default:
+			throw new Error('Unexpected type encountered in Cart Reducer: ', type);
+	}
+};
+
 export const CartItemsProvider = ({ children }) => {
-	const [cartItems, setCartItems] = useState([]);
-	const [cartDropdownToggle, setCartDropdownToggle] = useState(false);
-	const [totalCartItems, setTotalCartItems] = useState(false);
-	const [totalCheckoutPrice, setTotalCheckoutPrice] = useState(false);
+	const [state, dispatch] = useReducer(cartReducer, INITIAL_STATE);
+	const { cartItems, cartDropdownToggle, totalCartItems, totalCheckoutPrice } =
+		state;
 
-	useEffect(() => {
-		const newCartCount = cartItems.reduce(
-			(total, item) => total + item.quantity,
-			0
+	const setCartDropdownToggle = () => {
+		dispatch(
+			createAction(CART_REDUCER_TYPES.TOGGLE_CART_DROPDOWN, !cartDropdownToggle)
 		);
-		setTotalCartItems(newCartCount);
-	}, [cartItems]);
+	};
 
-	useEffect(() => {
-		const newCheckoutTotal = cartItems.reduce(
-			(total, item) => total + item.quantity * item.price,
-			0
+	const updateCartItemsReducer = (newCartItems) => {
+		const newCartCount = calculateCartCount(newCartItems);
+		const newCartTotalPrice = calculateCartTotalPrice(newCartItems);
+		dispatch(
+			createAction(CART_REDUCER_TYPES.SET_CART_ITEMS, {
+				cartItems: newCartItems,
+				totalCartItems: newCartCount,
+				totalCheckoutPrice: newCartTotalPrice,
+			})
 		);
-		setTotalCheckoutPrice(newCheckoutTotal);
-	}, [cartItems]);
+	};
 
 	const addItemToCart = (productToAdd) => {
-		setCartItems(addCartItem(cartItems, productToAdd));
+		updateCartItemsReducer(addCartItem(cartItems, productToAdd));
 	};
 
 	const removeItemFromCart = (itemToRemove, removeItemCompletely) => {
 		if (cartItems.length === 0) return;
 
-		setCartItems(removeCartItem(cartItems, itemToRemove, removeItemCompletely));
+		updateCartItemsReducer(
+			removeCartItem(cartItems, itemToRemove, removeItemCompletely)
+		);
 	};
 
 	const value = {
 		cartItems,
-		setCartItems,
 		cartDropdownToggle,
 		setCartDropdownToggle,
 		addItemToCart,
